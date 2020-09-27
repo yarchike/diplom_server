@@ -1,6 +1,7 @@
 package com.martynov.repository
 
 import com.google.gson.Gson
+import com.martynov.FILE_USER
 import com.martynov.data.UserData
 import com.martynov.model.UserModel
 import kotlinx.coroutines.sync.Mutex
@@ -46,8 +47,7 @@ class UserRepositoryInMemoryWithMutexImpl : UserRepository {
                 -1 -> {
                     val copy = iteam.copy(id = iteams.size.toLong())
                     iteams.add(copy)
-                    val fileName = "user.json"
-                    File(fileName).writeText(Gson().toJson(iteams))
+                    File(FILE_USER).writeText(Gson().toJson(iteams))
                     true
                 }
                 else -> {

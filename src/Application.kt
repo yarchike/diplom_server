@@ -1,5 +1,6 @@
 package com.martynov
 
+import com.martynov.exception.UserAddException
 import com.martynov.repository.UserRepository
 import com.martynov.repository.UserRepositoryInMemoryWithMutexImpl
 import com.martynov.route.RoutingV1
@@ -11,6 +12,8 @@ import io.ktor.auth.*
 import io.ktor.auth.jwt.*
 import io.ktor.features.*
 import io.ktor.gson.*
+import io.ktor.http.*
+import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.cio.*
 import io.ktor.util.*
@@ -66,6 +69,12 @@ fun Application.module(testing: Boolean = false) {
                 val id = it.payload.getClaim("id").asLong()
                 userService.getModelByid(id)
             }
+        }
+    }
+    install(StatusPages) {
+        exception<UserAddException> { e ->
+            call.respond(HttpStatusCode.BadRequest, Error("\"error\": Пользователь с таким логином уже зарегистрирован"))
+            throw e
         }
     }
 
