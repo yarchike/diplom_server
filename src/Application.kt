@@ -1,14 +1,18 @@
 package com.martynov
 
+import com.martynov.repository.UserRepository
+import com.martynov.repository.UserRepositoryInMemoryWithMutexImpl
 import com.martynov.route.RoutingV1
 import com.martynov.service.FileService
 import com.martynov.service.JWTTokenService
 import com.martynov.service.UserService
 import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.auth.jwt.*
 import io.ktor.features.*
 import io.ktor.gson.*
 import io.ktor.routing.*
-import io.ktor.server.netty.*
+import io.ktor.server.cio.*
 import io.ktor.util.*
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.eagerSingleton
@@ -39,17 +43,30 @@ fun Application.module(testing: Boolean = false) {
     install(KodeinFeature) {
 
         constant(tag = "upload-dir") with (environment.config.propertyOrNull("myv.upload.dir")?.getString()
-            ?: throw ConfigurationException("Upload dir is not specified")
+                ?: throw ConfigurationException("Upload dir is not specified")
                 )
-        bind<RoutingV1>() with eagerSingleton { RoutingV1(instance(tag = "upload-dir"), instance()) }
+        bind<RoutingV1>() with eagerSingleton { RoutingV1(instance(tag = "upload-dir"), instance(), instance()) }
         bind<FileService>() with eagerSingleton { FileService(instance(tag = "upload-dir")) }
         bind<PasswordEncoder>() with eagerSingleton { BCryptPasswordEncoder() }
         bind<JWTTokenService>() with eagerSingleton { JWTTokenService() }
         bind<UserService>() with eagerSingleton { UserService(instance(), instance(), instance()) }
+        bind<UserRepository>() with eagerSingleton { UserRepositoryInMemoryWithMutexImpl() }
     }
     install(Routing) {
         val routingV1 by kodein().instance<RoutingV1>()
         routingV1.setup(this)
+    }
+    install(Authentication) {
+        jwt {
+            val jwtServisce by kodein().instance<JWTTokenService>()
+            verifier(jwtServisce.verifier)
+            val userService by kodein().instance<UserService>()
+
+            validate {
+                val id = it.payload.getClaim("id").asLong()
+                userService.getModelByid(id)
+            }
+        }
     }
 
 

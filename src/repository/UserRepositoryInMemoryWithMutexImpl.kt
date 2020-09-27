@@ -1,11 +1,14 @@
 package com.martynov.repository
 
+import com.google.gson.Gson
+import com.martynov.data.UserData
 import com.martynov.model.UserModel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.io.File
 
 class UserRepositoryInMemoryWithMutexImpl : UserRepository {
-    private val iteams = mutableListOf<UserModel>()
+    private val iteams = UserData.getDataBase()
     private val mutex = Mutex()
 
     override suspend fun getById(id: Long): UserModel? {
@@ -35,6 +38,27 @@ class UserRepositoryInMemoryWithMutexImpl : UserRepository {
                 }
             }
         }
+    }
+
+    override suspend fun addUser(iteam: UserModel): Boolean {
+        mutex.withLock {
+            return when (val index = iteams.indexOfFirst { it.username == iteam.username }) {
+                -1 -> {
+                    val copy = iteam.copy(id = iteams.size.toLong())
+                    iteams.add(copy)
+                    val fileName = "user.json"
+                    File(fileName).writeText(Gson().toJson(iteams))
+                    true
+                }
+                else -> {
+                    false
+                }
+            }
+        }
+    }
+
+    override fun getSizeListUser(): Int {
+        return iteams.size
     }
 
 }
