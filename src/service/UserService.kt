@@ -30,7 +30,7 @@ class UserService(
         val model = UserModel(
                 id = repo.getSizeListUser().toLong(),
                 username = iteam.username,
-                password = iteam.password,
+                password = passwordEncoder.encode(iteam.password),
                 token = tokenService.generate(repo.getSizeListUser().toLong())
         )
         val chekingIsUser = repo.addUser(model)
