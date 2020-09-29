@@ -48,8 +48,11 @@ fun Application.module(testing: Boolean = false) {
         constant(tag = "upload-dir") with (environment.config.propertyOrNull("myv.upload.dir")?.getString()
                 ?: throw ConfigurationException("Upload dir is not specified")
                 )
-        bind<RoutingV1>() with eagerSingleton { RoutingV1(instance(tag = "upload-dir"), instance(), instance()) }
-        bind<FileService>() with eagerSingleton { FileService(instance(tag = "upload-dir")) }
+        constant(tag = "upload-user") with (environment.config.propertyOrNull("myv.uploadUser.dir")?.getString()
+            ?: throw ConfigurationException("Upload dir is not specified")
+                )
+        bind<RoutingV1>() with eagerSingleton { RoutingV1(instance(tag = "upload-dir"),instance(tag = "upload-user"), instance(), instance()) }
+        bind<FileService>() with eagerSingleton { FileService(instance(tag = "upload-dir"), instance(tag = "upload-user")) }
         bind<PasswordEncoder>() with eagerSingleton { BCryptPasswordEncoder() }
         bind<JWTTokenService>() with eagerSingleton { JWTTokenService() }
         bind<UserService>() with eagerSingleton { UserService(instance(), instance(), instance()) }

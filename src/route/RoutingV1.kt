@@ -13,6 +13,7 @@ import io.ktor.routing.*
 
 class RoutingV1(
         private val staticPath: String,
+        private val staticPathUser: String,
         private val fileService: FileService,
         private val userService: UserService
 ) {
@@ -24,6 +25,9 @@ class RoutingV1(
             route("/api/v1") {
                 static("/static") {
                     files(staticPath)
+                }
+                static("/static/user") {
+                    files(staticPathUser)
                 }
                 post("/authentication"){
                     val input = call.receive<AuthenticationRequestDto>()
@@ -38,6 +42,12 @@ class RoutingV1(
                 post("/media") {
                     val multipart = call.receiveMultipart()
                     val response = fileService.save(multipart)
+                    call.respond(response)
+
+                }
+                post("/media/user") {
+                    val multipart = call.receiveMultipart()
+                    val response = fileService.saveUser(multipart)
                     call.respond(response)
 
                 }
