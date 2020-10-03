@@ -1,6 +1,7 @@
 package com.martynov.route
 
 import com.martynov.dto.AuthenticationRequestDto
+import com.martynov.dto.RegistrationRequestDto
 import com.martynov.exception.UserAddException
 import com.martynov.service.FileService
 import com.martynov.service.UserService
@@ -35,7 +36,7 @@ class RoutingV1(
                     call.respond(response)
                 }
                 post("/registration"){
-                    val input = call.receive<AuthenticationRequestDto>()
+                    val input = call.receive<RegistrationRequestDto>()
                     val response = userService.registration(input)
                     call.respond(response)
                 }

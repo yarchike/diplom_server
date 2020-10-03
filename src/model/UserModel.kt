@@ -7,5 +7,6 @@ data class UserModel(
     val username: String,
     val password: String,
     val token: String,
-    val tokenDevice: String = ""
+    val tokenDevice: String = "",
+    val attachment: AttachmentModel?= null
 ): Principal
