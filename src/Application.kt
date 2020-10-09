@@ -1,6 +1,8 @@
 package com.martynov
 
 import com.martynov.exception.UserAddException
+import com.martynov.repository.IdeaRepository
+import com.martynov.repository.IdeaRepositoryMutex
 import com.martynov.repository.UserRepository
 import com.martynov.repository.UserRepositoryInMemoryWithMutexImpl
 import com.martynov.route.RoutingV1
@@ -17,10 +19,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.cio.*
 import io.ktor.util.*
-import org.kodein.di.generic.bind
-import org.kodein.di.generic.eagerSingleton
-import org.kodein.di.generic.instance
-import org.kodein.di.generic.with
+import org.kodein.di.generic.*
 import org.kodein.di.ktor.KodeinFeature
 import org.kodein.di.ktor.kodein
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -57,6 +56,7 @@ fun Application.module(testing: Boolean = false) {
         bind<JWTTokenService>() with eagerSingleton { JWTTokenService() }
         bind<UserService>() with eagerSingleton { UserService(instance(), instance(), instance()) }
         bind<UserRepository>() with eagerSingleton { UserRepositoryInMemoryWithMutexImpl() }
+        bind<IdeaRepository>() with singleton { IdeaRepositoryMutex() }
     }
     install(Routing) {
         val routingV1 by kodein().instance<RoutingV1>()
