@@ -58,10 +58,6 @@ fun Application.module(testing: Boolean = false) {
         bind<UserRepository>() with eagerSingleton { UserRepositoryInMemoryWithMutexImpl() }
         bind<IdeaRepository>() with singleton { IdeaRepositoryMutex() }
     }
-    install(Routing) {
-        val routingV1 by kodein().instance<RoutingV1>()
-        routingV1.setup(this)
-    }
     install(Authentication) {
         jwt {
             val jwtServisce by kodein().instance<JWTTokenService>()
@@ -74,11 +70,17 @@ fun Application.module(testing: Boolean = false) {
             }
         }
     }
+    install(Routing) {
+        val routingV1 by kodein().instance<RoutingV1>()
+        routingV1.setup(this)
+    }
+
     install(StatusPages) {
         exception<UserAddException> { e ->
             call.respond(HttpStatusCode.BadRequest, Error("\"error\": Пользователь с таким логином уже зарегистрирован"))
             throw e
         }
+
     }
 
 

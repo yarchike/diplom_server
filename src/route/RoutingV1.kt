@@ -4,7 +4,6 @@ import com.martynov.dto.AuthenticationRequestDto
 import com.martynov.dto.AutorIdeaRequest
 import com.martynov.dto.IdeaResponseDto
 import com.martynov.dto.RegistrationRequestDto
-import com.martynov.exception.UserAddException
 import com.martynov.model.IdeaModel
 import com.martynov.model.UserModel
 import com.martynov.repository.IdeaRepository
@@ -64,6 +63,8 @@ class RoutingV1(
 
                 }
                 authenticate {
+
+
                     post("/ideas/new") {
                         val request = call.receive<IdeaResponseDto>()
                         val me = call.authentication.principal<UserModel>()
@@ -73,14 +74,35 @@ class RoutingV1(
                                 autor = autor,
                                 date = request.date,
                                 ideaText = request.ideaText,
-                                attachment = request.attachment
+                                attachment = request.attachment,
+                                like = request.like,
+                                disLike = request.disLike
                             )
                         ) ?: throw NotFoundException()
                         call.respond(response)
                     }
-                    get("/posts") {
-                        val response = repo.getAll()
+                    get("/ideas") {
+                        val me = call.authentication.principal<UserModel>()
+                        val response = repo.getAll(me?.id)
                         call.respond(response)
+                    }
+                    post("ideas/{id}/like") {
+                        val id =
+                            call.parameters["id"]?.toLongOrNull()
+                                ?: throw ParameterConversionException("id", "Long")
+                        val me = call.authentication.principal<UserModel>()
+                        val response = repo.like(id, me?.id) ?: throw NotFoundException()
+                        call.respond(response)
+
+                    }
+                    post("ideas/{id}/dislike") {
+                        val id =
+                            call.parameters["id"]?.toLongOrNull()
+                                ?: throw ParameterConversionException("id", "Long")
+                        val me = call.authentication.principal<UserModel>()
+                        val response = repo.disLike(id, me?.id) ?: throw NotFoundException()
+                        call.respond(response)
+
                     }
                 }
             }
