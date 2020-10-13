@@ -1,5 +1,7 @@
 package com.martynov.repository
 
+import com.martynov.dto.AutorIdeaRequest
+import com.martynov.model.LikeAndDislike
 import com.martynov.model.UserModel
 
 interface UserRepository {
@@ -8,4 +10,5 @@ interface UserRepository {
     suspend fun save(iteam: UserModel): UserModel
     suspend fun addUser(iteam: UserModel): Boolean
     fun getSizeListUser(): Int
+    suspend fun getUsersBy(itemLikeDislik: ArrayList<LikeAndDislike>):ArrayList<AutorIdeaRequest>
 }

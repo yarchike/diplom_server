@@ -91,7 +91,7 @@ class RoutingV1(
                             call.parameters["id"]?.toLongOrNull()
                                 ?: throw ParameterConversionException("id", "Long")
                         val me = call.authentication.principal<UserModel>()
-                        val response = repo.like(id, me?.id) ?: throw NotFoundException()
+                        val response = repo.like(id, me) ?: throw NotFoundException()
                         call.respond(response)
 
                     }
@@ -100,9 +100,19 @@ class RoutingV1(
                             call.parameters["id"]?.toLongOrNull()
                                 ?: throw ParameterConversionException("id", "Long")
                         val me = call.authentication.principal<UserModel>()
-                        val response = repo.disLike(id, me?.id) ?: throw NotFoundException()
+                        val response = repo.disLike(id, me) ?: throw NotFoundException()
                         call.respond(response)
 
+                    }
+                    post("ideas/{id}/likeanddislike"){
+                        val id =
+                            call.parameters["id"]?.toLongOrNull()
+                                ?: throw ParameterConversionException("id", "Long")
+                        val idLikeDislike = null
+                    }
+                    get("/me") {
+                        val me = call.authentication.principal<UserModel>()
+                        call.respond(AutorIdeaRequest.fromModel(me!!))
                     }
                 }
             }

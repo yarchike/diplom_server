@@ -7,6 +7,7 @@ import com.martynov.repository.UserRepository
 import com.martynov.repository.UserRepositoryInMemoryWithMutexImpl
 import com.martynov.route.RoutingV1
 import com.martynov.service.FileService
+import com.martynov.service.IdeaService
 import com.martynov.service.JWTTokenService
 import com.martynov.service.UserService
 import io.ktor.application.*
@@ -55,6 +56,7 @@ fun Application.module(testing: Boolean = false) {
         bind<PasswordEncoder>() with eagerSingleton { BCryptPasswordEncoder() }
         bind<JWTTokenService>() with eagerSingleton { JWTTokenService() }
         bind<UserService>() with eagerSingleton { UserService(instance(), instance(), instance()) }
+        bind<IdeaService>() with eagerSingleton { IdeaService(instance(), instance()) }
         bind<UserRepository>() with eagerSingleton { UserRepositoryInMemoryWithMutexImpl() }
         bind<IdeaRepository>() with singleton { IdeaRepositoryMutex() }
     }

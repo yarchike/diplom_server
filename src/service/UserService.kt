@@ -34,9 +34,8 @@ class UserService(
             username = iteam.username,
             password = passwordEncoder.encode(iteam.password),
             attachment = iteam.attachmentModel,
-            token = tokenService.generate(repo.getSizeListUser().toLong())
-
-
+            token = tokenService.generate(repo.getSizeListUser().toLong()),
+            readOnlyIdea = false
         )
         val chekingIsUser = repo.addUser(model)
         if (chekingIsUser) {
@@ -44,6 +43,7 @@ class UserService(
         }
         return throw UserAddException("\"error\": Пользователь с таким логином уже зарегистрирован")
     }
+
 
 
 }

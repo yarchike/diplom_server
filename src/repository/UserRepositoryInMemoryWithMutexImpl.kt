@@ -3,6 +3,8 @@ package com.martynov.repository
 import com.google.gson.Gson
 import com.martynov.FILE_USER
 import com.martynov.data.UserData
+import com.martynov.dto.AutorIdeaRequest
+import com.martynov.model.LikeAndDislike
 import com.martynov.model.UserModel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -11,6 +13,7 @@ import java.io.File
 class UserRepositoryInMemoryWithMutexImpl : UserRepository {
     private val iteams = UserData.getDataBase()
     private val mutex = Mutex()
+
 
     override suspend fun getById(id: Long): UserModel? {
         mutex.withLock {
@@ -45,7 +48,7 @@ class UserRepositoryInMemoryWithMutexImpl : UserRepository {
         mutex.withLock {
             return when (val index = iteams.indexOfFirst { it.username == iteam.username }) {
                 -1 -> {
-                    val copy = iteam.copy(id = iteams.size.toLong())
+                    val copy = iteam.copy(id = iteams.size.toLong(), readOnlyIdea = false)
                     iteams.add(copy)
                     File(FILE_USER).writeText(Gson().toJson(iteams))
                     true
@@ -61,6 +64,17 @@ class UserRepositoryInMemoryWithMutexImpl : UserRepository {
         return iteams.size
     }
 
+    override suspend fun getUsersBy(itemLikeDislik: ArrayList<LikeAndDislike>): ArrayList<AutorIdeaRequest> {
+        mutex.withLock {
+            val users = ArrayList<AutorIdeaRequest>()
+            for (likeDislik in itemLikeDislik) {
+                val index = iteams.indexOfFirst { it.id == likeDislik.autor.id }
+                val user = iteams[index]
+                users.add(AutorIdeaRequest(id = user.id, username = user.username, attachment = user.attachment))
+            }
+            return users
+        }
+    }
 
 
 }
