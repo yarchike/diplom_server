@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.martynov.FILE_USER
 import com.martynov.data.UserData
 import com.martynov.dto.AutorIdeaRequest
+import com.martynov.model.AttachmentModel
 import com.martynov.model.LikeAndDislike
 import com.martynov.model.UserModel
 import kotlinx.coroutines.sync.Mutex
@@ -33,11 +34,13 @@ class UserRepositoryInMemoryWithMutexImpl : UserRepository {
                 -1 -> {
                     val copy = iteam.copy(id = iteams.size.toLong())
                     iteams.add(copy)
+                    File(FILE_USER).writeText(Gson().toJson(iteams))
                     copy
                 }
                 else -> {
                     val copy = iteams[index].copy(username = iteam.username, password = iteam.password)
                     iteams.add(index, copy)
+                    File(FILE_USER).writeText(Gson().toJson(iteams))
                     copy
                 }
             }
@@ -74,6 +77,57 @@ class UserRepositoryInMemoryWithMutexImpl : UserRepository {
             }
             return users
         }
+    }
+
+    override suspend fun userToReadOnly(id: Long?) {
+        mutex.withLock {
+            val index = iteams.indexOfFirst { it.id == id }
+            val user = iteams[index]
+            val copyUser = user.copy(readOnlyIdea = true)
+            iteams[index] = copyUser
+            File(FILE_USER).writeText(Gson().toJson(iteams))
+        }
+
+    }
+
+    override suspend fun userNotReadOnly(id: Long?) {
+        mutex.withLock {
+            val index = iteams.indexOfFirst { it.id == id }
+            val user = iteams[index]
+            val copyUser = user.copy(readOnlyIdea = false)
+            iteams[index] = copyUser
+            File(FILE_USER).writeText(Gson().toJson(iteams))
+        }
+    }
+
+    override suspend fun userChangeImg(id: Long, attachmentModel: AttachmentModel):Boolean {
+        mutex.withLock {
+            val index = iteams.indexOfFirst { it.id == id }
+            val user = iteams[index]
+            val copy = user.copy(attachment = attachmentModel)
+            iteams[index] = copy
+            File(FILE_USER).writeText(Gson().toJson(iteams))
+        }
+        return true
+    }
+
+    override suspend fun getAllUser(): List<UserModel> {
+        return iteams
+    }
+
+    override suspend fun addTokenDevice(id: Long?, tokenDevice: String): UserModel {
+        mutex.withLock {
+            val index = iteams.indexOfFirst { it.id == id }
+            val copyUser = iteams[index].copy(tokenDevice = tokenDevice)
+            iteams[index] = copyUser
+            File(FILE_USER).writeText(Gson().toJson(iteams))
+            return copyUser
+        }
+    }
+
+    override fun findTokenDevice(id: Long?): String {
+        val index = iteams.indexOfFirst { it.id == id }
+        return iteams[index].tokenDevice
     }
 
 

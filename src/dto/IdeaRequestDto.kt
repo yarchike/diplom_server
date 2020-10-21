@@ -14,5 +14,6 @@ data class IdeaRequestDto (
     val ideaIsLike: ArrayList<LikeAndDislike> = ArrayList(),
    //val ideaIsDisLike: ArrayList<LikeAndDislike> = ArrayList(),
     var isLike:Boolean = false,
-    var isDisLike:Boolean = false
+    var isDisLike:Boolean = false,
+    val url:String =""
 )

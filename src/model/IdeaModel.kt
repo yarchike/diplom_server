@@ -8,10 +8,11 @@ data class IdeaModel(
     val date: Long = 0,
     val ideaText: String,
     val attachment: AttachmentModel? = null,
-    val like: Long,
-    val disLike: Long,
+    val like: Long = 0,
+    val disLike: Long = 0,
     val ideaIsLike: ArrayList<LikeAndDislike> = ArrayList(),
     //val ideaIsDisLike: ArrayList<Long> = ArrayList(),
     var isLike:Boolean = false,
-    var isDisLike:Boolean = false
+    var isDisLike:Boolean = false,
+    val url:String =""
 )

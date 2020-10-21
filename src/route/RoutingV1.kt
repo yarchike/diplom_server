@@ -1,13 +1,15 @@
 package com.martynov.route
 
-import com.martynov.dto.AuthenticationRequestDto
-import com.martynov.dto.AutorIdeaRequest
-import com.martynov.dto.IdeaResponseDto
-import com.martynov.dto.RegistrationRequestDto
-import com.martynov.model.IdeaModel
+import com.google.gson.Gson
+import com.martynov.FILE_LOG
+import com.martynov.dto.*
+import com.martynov.model.AttachmentModel
 import com.martynov.model.UserModel
 import com.martynov.repository.IdeaRepository
+import com.martynov.repository.UserRepository
+import com.martynov.service.FCMService
 import com.martynov.service.FileService
+import com.martynov.service.IdeaService
 import com.martynov.service.UserService
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -19,16 +21,20 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import org.kodein.di.generic.instance
 import org.kodein.di.ktor.kodein
+import java.io.File
 
 class RoutingV1(
     private val staticPath: String,
     private val staticPathUser: String,
     private val fileService: FileService,
-    private val userService: UserService
+    private val userService: UserService,
+    private val ideaService: IdeaService,
+    private val fcmService: FCMService
 ) {
     fun setup(configuration: Routing) {
         with(configuration) {
             val repo by kodein().instance<IdeaRepository>()
+            val repoUser by kodein().instance<UserRepository>()
             get("/") {
                 call.respondText("Server working", ContentType.Text.Plain)
             }
@@ -68,30 +74,35 @@ class RoutingV1(
                     post("/ideas/new") {
                         val request = call.receive<IdeaResponseDto>()
                         val me = call.authentication.principal<UserModel>()
-                        val autor = AutorIdeaRequest(id = me?.id, username = me?.username, attachment = me?.attachment)
-                        val response = repo.newIdea(
-                            IdeaModel(
-                                autor = autor,
-                                date = request.date,
-                                ideaText = request.ideaText,
-                                attachment = request.attachment,
-                                like = request.like,
-                                disLike = request.disLike
-                            )
-                        ) ?: throw NotFoundException()
-                        call.respond(response)
+                        call.respond(ideaService.getNewIdea(request, me))
                     }
                     get("/ideas") {
                         val me = call.authentication.principal<UserModel>()
-                        val response = repo.getAll(me?.id)
+                        val response = ideaService.getAllIdea(me?.id)
+                        call.respond(response)
+                    }
+                    get("/ideas/{id}"){
+                        val id = call.parameters["id"]?.toLongOrNull()
+                        val model = ideaService.getIdeaId(id) ?: throw NotFoundException()
+                        call.respond(model)
+
+                    }
+                    post("/ideas/count") {
+                        val request = call.receive<Long>()
+                        val me = call.authentication.principal<UserModel>()
+                        val response = ideaService.getCountIdea(me?.id, request)
                         call.respond(response)
                     }
                     post("ideas/{id}/like") {
                         val id =
                             call.parameters["id"]?.toLongOrNull()
                                 ?: throw ParameterConversionException("id", "Long")
+                        println(id)
                         val me = call.authentication.principal<UserModel>()
-                        val response = repo.like(id, me) ?: throw NotFoundException()
+                        val response = ideaService.like(id, me) ?: throw NotFoundException()
+                        if (me != null) {
+                            fcmService.send(id, userService.findTokenDeviceUser(response.autor.id), "Вашу идею одобрил ${me.username} ")
+                        }
                         call.respond(response)
 
                     }
@@ -99,22 +110,50 @@ class RoutingV1(
                         val id =
                             call.parameters["id"]?.toLongOrNull()
                                 ?: throw ParameterConversionException("id", "Long")
+                        println(id)
                         val me = call.authentication.principal<UserModel>()
-                        val response = repo.disLike(id, me) ?: throw NotFoundException()
+                        val response = ideaService.dislike(id, me) ?: throw NotFoundException()
+                        if (me != null) {
+                            fcmService.send(id, userService.findTokenDeviceUser(response.autor.id), "Вашу идею неодобрил ${me.username} ")
+                        }
                         call.respond(response)
 
                     }
-                    post("ideas/{id}/likeanddislike"){
-                        val id =
-                            call.parameters["id"]?.toLongOrNull()
-                                ?: throw ParameterConversionException("id", "Long")
-                        val idLikeDislike = null
-                    }
+
                     get("/me") {
                         val me = call.authentication.principal<UserModel>()
                         call.respond(AutorIdeaRequest.fromModel(me!!))
                     }
+                    post("user/changePassword") {
+                        val request = call.receive<PasswordChangeRequestDto>()
+                        val me = call.authentication.principal<UserModel>()
+                        if (me != null) {
+                            val response = userService.changePassword(me.id, request)
+                            call.respond(response)
+                        }
+                    }
+                    post("user/changeImage") {
+                        val request = call.receive<AttachmentModel>()
+                        val me = call.authentication.principal<UserModel>()
+                        File(FILE_LOG).writeText(Gson().toJson(me))
+                        if (me != null) {
+                            val response = repoUser.userChangeImg(me.id, request)
+                            call.respond(response)
+
+                        }
+                    }
+                    post("/push") {
+                        val input = call.receive<TokenDeviceDto>()
+                        println(input.token)
+                        val input2 = call.request.header("Id")?.toLong()
+                        println(input2)
+                        val user = userService.addTokenDevice(input2, input.token)
+                        println(user)
+                        call.respond(user)
+
+                    }
                 }
+
             }
 
 

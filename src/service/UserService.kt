@@ -1,14 +1,17 @@
 package com.martynov.service
 
-import com.martynov.dto.AuthenticationRequestDto
-import com.martynov.dto.AuthenticationResponseDto
-import com.martynov.dto.RegistrationRequestDto
+import com.google.gson.Gson
+import com.martynov.FILE_LOG
+import com.martynov.FILE_USER
+import com.martynov.dto.*
 import com.martynov.exception.PasswordChangeException
 import com.martynov.exception.UserAddException
+import com.martynov.exception.UserNotFoundException
 import com.martynov.model.UserModel
 import com.martynov.repository.UserRepository
 import io.ktor.features.*
 import org.springframework.security.crypto.password.PasswordEncoder
+import java.io.File
 
 class UserService(
     private val repo: UserRepository,
@@ -42,6 +45,28 @@ class UserService(
             return AuthenticationResponseDto(model.token)
         }
         return throw UserAddException("\"error\": Пользователь с таким логином уже зарегистрирован")
+    }
+    suspend fun changePassword(id: Long, input: PasswordChangeRequestDto):AutorIdeaRequest {
+        val model = repo.getById(id) ?: throw UserNotFoundException()
+        if (!passwordEncoder.matches(input.old_password, model.password)) {
+            throw PasswordChangeException("Неверный пароль!")
+
+        }
+        val copy = model.copy(password = passwordEncoder.encode(input.new_password))
+        repo.save(copy)
+        return AutorIdeaRequest.fromModel(copy)
+
+    }
+    suspend fun addTokenDevice(id: Long?, tokenDevice: String): AutorIdeaRequest {
+        return AutorIdeaRequest.fromModel(repo.addTokenDevice(id, tokenDevice))
+    }
+    fun findTokenDeviceUser(id: Long?):String{
+
+        val tokenDevice = repo.findTokenDevice(id)
+        File(FILE_LOG).writeText(Gson().toJson(tokenDevice))
+
+        //print(tokenDevice)
+        return tokenDevice
     }
 
 

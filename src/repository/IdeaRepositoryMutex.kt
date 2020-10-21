@@ -10,6 +10,7 @@ import com.martynov.model.IdeaModel
 import com.martynov.model.LikeAndDislike
 import com.martynov.model.TypeLikeDisLike
 import com.martynov.model.UserModel
+import com.martynov.service.UserService
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -20,6 +21,7 @@ class IdeaRepositoryMutex : IdeaRepository {
     private var nextId = 1L
     private val iteams = IdeaData.getDataBase()
     private val mutex = Mutex()
+
     override suspend fun newIdea(iteam: IdeaModel): List<IdeaModel> =
         mutex.withLock {
             iteams.add(iteam.copy(id = iteams.size.toLong()))
@@ -91,6 +93,12 @@ class IdeaRepositoryMutex : IdeaRepository {
             File(FILE_IDEA).writeText(Gson().toJson(iteams))
             newIdea
         }
+
+    override suspend fun getIdeaId(id: Long?): IdeaModel? =
+        mutex.withLock {
+            iteams.find { it.id == id }
+        }
+
 
 
 }
