@@ -101,7 +101,7 @@ class RoutingV1(
                         val me = call.authentication.principal<UserModel>()
                         val response = ideaService.like(id, me) ?: throw NotFoundException()
                         if (me != null) {
-                            fcmService.send(id, userService.findTokenDeviceUser(response.autor.id), "Вашу идею одобрил ${me.username} ")
+                            fcmService.send(id, userService.findTokenDeviceUser(response.autor.id), "Одобрение", "Вашу идею одобрил ${me.username} ")
                         }
                         call.respond(response)
 
@@ -114,7 +114,7 @@ class RoutingV1(
                         val me = call.authentication.principal<UserModel>()
                         val response = ideaService.dislike(id, me) ?: throw NotFoundException()
                         if (me != null) {
-                            fcmService.send(id, userService.findTokenDeviceUser(response.autor.id), "Вашу идею неодобрил ${me.username} ")
+                            fcmService.send(id, userService.findTokenDeviceUser(response.autor.id), "Неодобрение", "Вашу идею неодобрил ${me.username}" )
                         }
                         call.respond(response)
 

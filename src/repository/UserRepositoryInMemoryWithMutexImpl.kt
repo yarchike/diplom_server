@@ -7,6 +7,7 @@ import com.martynov.dto.AutorIdeaRequest
 import com.martynov.model.AttachmentModel
 import com.martynov.model.LikeAndDislike
 import com.martynov.model.UserModel
+import com.martynov.model.UserType
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -63,7 +64,7 @@ class UserRepositoryInMemoryWithMutexImpl : UserRepository {
         }
     }
 
-    override fun getSizeListUser(): Int {
+    override suspend fun getSizeListUser(): Int {
         return iteams.size
     }
 
@@ -125,9 +126,68 @@ class UserRepositoryInMemoryWithMutexImpl : UserRepository {
         }
     }
 
-    override fun findTokenDevice(id: Long?): String {
+    override suspend fun findTokenDevice(id: Long?): String {
         val index = iteams.indexOfFirst { it.id == id }
         return iteams[index].tokenDevice
+    }
+
+    override suspend fun likeUp(user: UserModel) {
+        mutex.withLock {
+            val index = iteams.indexOfFirst { it.id == user.id }
+            val copyUser = iteams[index].copy(numberOfLike = iteams[index].numberOfLike.inc())
+            iteams[index] = copyUser
+            File(FILE_USER).writeText(Gson().toJson(iteams))
+
+        }
+    }
+    override suspend fun disLikeUp(user: UserModel) {
+        mutex.withLock {
+            val index = iteams.indexOfFirst { it.id == user.id }
+            val copyUser = iteams[index].copy(numberOfDislike = iteams[index].numberOfDislike.inc())
+            iteams[index] = copyUser
+            File(FILE_USER).writeText(Gson().toJson(iteams))
+
+        }
+    }
+
+    override suspend fun toHater(user: UserModel){
+        val sortIteam = ArrayList<UserModel>(iteams)
+        sortIteam.sortWith(
+            compareBy { it.numberOfDislike }
+        )
+        val isIndex = sortIteam.takeLast(5).indexOfFirst { it.id == user.id }
+        var isTopFive = false
+        if(isIndex > -1){
+            isTopFive = true
+        }
+        println("Диз ${user.numberOfDislike} ")
+        println(user.numberOfDislike > 2)
+        println(user.numberOfDislike > user.numberOfLike/2)
+        println(isTopFive)
+        if(user.numberOfDislike > 2 && user.numberOfDislike > user.numberOfLike/2  && isTopFive ){
+            println("Зашло")
+            val index = iteams.indexOfFirst { it.id == user.id }
+            val copyUser = iteams[index].copy(userType = UserType.HATER)
+            iteams[index] = copyUser
+            File(FILE_USER).writeText(Gson().toJson(iteams))
+        }
+    }
+    override suspend fun toPromoter(user: UserModel){
+        val sortIteam = ArrayList<UserModel>(iteams)
+        sortIteam.sortWith(
+            compareBy { it.numberOfLike }
+        )
+        val isIndex = sortIteam.takeLast(5).indexOfFirst { it.id == user.id }
+        var isTopFive = false
+        if(isIndex > -1){
+            isTopFive = true
+        }
+        if(user.numberOfLike > 2 && user.numberOfLike > user.numberOfDislike/2  && isTopFive ){
+            val index = iteams.indexOfFirst { it.id == user.id }
+            val copyUser = iteams[index].copy(userType = UserType.HATER)
+            iteams[index] = copyUser
+            File(FILE_USER).writeText(Gson().toJson(iteams))
+        }
     }
 
 

@@ -58,7 +58,7 @@ class IdeaRepositoryMutex : IdeaRepository {
             }
             val idea = iteams[index]
             for(likeDislike in idea.ideaIsLike){
-                if(likeDislike.autor.id == user?.id && likeDislike.type == TypeLikeDisLike.LIKE){
+                if(likeDislike.autor.id == user?.id ){
                     return throw ActionProhibitedException("действие запрешено")
                 }
             }
@@ -80,7 +80,7 @@ class IdeaRepositoryMutex : IdeaRepository {
             }
             val idea = iteams[index]
             for(likeDislike in idea.ideaIsLike){
-                if(likeDislike.autor.id == user?.id && likeDislike.type == TypeLikeDisLike.DISLIKE){
+                if(likeDislike.autor.id == user?.id){
                     return throw ActionProhibitedException("действие запрешено")
                 }
             }

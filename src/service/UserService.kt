@@ -60,7 +60,7 @@ class UserService(
     suspend fun addTokenDevice(id: Long?, tokenDevice: String): AutorIdeaRequest {
         return AutorIdeaRequest.fromModel(repo.addTokenDevice(id, tokenDevice))
     }
-    fun findTokenDeviceUser(id: Long?):String{
+    suspend fun findTokenDeviceUser(id: Long?):String{
 
         val tokenDevice = repo.findTokenDevice(id)
         File(FILE_LOG).writeText(Gson().toJson(tokenDevice))

@@ -33,15 +33,27 @@ class IdeaService(
     suspend fun dislike(id: Long, user: UserModel?): IdeaModel? {
         val idea = repo.disLike(id, user) ?: throw NotFoundException()
         if (idea.disLike > 99 && idea.like == 0L) {
-            File(FILE_LOG).appendText("Сработало + \n")
             repoUser.userToReadOnly(idea.autor.id)
         }
+        if (user != null) {
+            repoUser.disLikeUp(user)
+        }
+        if (user != null) {
+            repoUser.toHater(user)
+        }
+
         return idea
     }
 
     suspend fun like(id: Long, user: UserModel?): IdeaModel? {
         val idea = repo.like(id, user) ?: throw NotFoundException()
         repoUser.userNotReadOnly(idea.autor.id)
+        if (user != null) {
+            repoUser.likeUp(user)
+        }
+        if (user != null) {
+            repoUser.toPromoter(user)
+        }
         return idea
     }
 
@@ -62,15 +74,25 @@ class IdeaService(
 
     suspend fun getCountIdea(id: Long?, idEndIdea: Long): List<IdeaModel> {
         val listIdea = repo.getAll(id)
+        val userList = repoUser.getAllUser()
         if (idEndIdea == -1L) {
-            return listIdea.take(20)
+            val newIdeaList = ArrayList<IdeaModel>()
+            for (idea in listIdea.takeLast(20)) {
+                val index = userList.indexOfFirst { idea.autor.id == it.id }
+                if (index > -1) {
+                    newIdeaList.add(idea.copy(autor = AutorIdeaRequest.fromModel(userList[index])))
+                } else {
+                    newIdeaList.add(idea)
+                }
+            }
+
+            return newIdeaList.take(20)
 
         } else {
             val listTempCount = listIdea.filter {
                 it.id < idEndIdea
             }
             val newIdeaList = ArrayList<IdeaModel>()
-            val userList = repoUser.getAllUser()
             for (idea in listTempCount.takeLast(20)) {
                 val index = userList.indexOfFirst { idea.autor.id == it.id }
                 if (index > -1) {
