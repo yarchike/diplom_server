@@ -2,7 +2,6 @@ package com.martynov.service
 
 import com.google.gson.Gson
 import com.martynov.FILE_LOG
-import com.martynov.FILE_USER
 import com.martynov.dto.*
 import com.martynov.exception.PasswordChangeException
 import com.martynov.exception.UserAddException
@@ -46,7 +45,8 @@ class UserService(
         }
         return throw UserAddException("\"error\": Пользователь с таким логином уже зарегистрирован")
     }
-    suspend fun changePassword(id: Long, input: PasswordChangeRequestDto):AutorIdeaRequest {
+
+    suspend fun changePassword(id: Long, input: PasswordChangeRequestDto): AutorIdeaRequest {
         val model = repo.getById(id) ?: throw UserNotFoundException()
         if (!passwordEncoder.matches(input.old_password, model.password)) {
             throw PasswordChangeException("Неверный пароль!")
@@ -57,18 +57,17 @@ class UserService(
         return AutorIdeaRequest.fromModel(copy)
 
     }
+
     suspend fun addTokenDevice(id: Long?, tokenDevice: String): AutorIdeaRequest {
         return AutorIdeaRequest.fromModel(repo.addTokenDevice(id, tokenDevice))
     }
-    suspend fun findTokenDeviceUser(id: Long?):String{
+
+    suspend fun findTokenDeviceUser(id: Long?): String {
 
         val tokenDevice = repo.findTokenDevice(id)
         File(FILE_LOG).writeText(Gson().toJson(tokenDevice))
-
-        //print(tokenDevice)
         return tokenDevice
     }
-
 
 
 }

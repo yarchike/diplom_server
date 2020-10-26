@@ -2,7 +2,6 @@ package com.martynov.repository
 
 import com.google.gson.Gson
 import com.martynov.FILE_IDEA
-import com.martynov.FILE_IDEA3
 import com.martynov.data.IdeaData
 import com.martynov.dto.AutorIdeaRequest
 import com.martynov.exception.ActionProhibitedException
@@ -10,7 +9,6 @@ import com.martynov.model.IdeaModel
 import com.martynov.model.LikeAndDislike
 import com.martynov.model.TypeLikeDisLike
 import com.martynov.model.UserModel
-import com.martynov.service.UserService
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -57,14 +55,22 @@ class IdeaRepositoryMutex : IdeaRepository {
                 return@withLock null
             }
             val idea = iteams[index]
-            for(likeDislike in idea.ideaIsLike){
-                if(likeDislike.autor.id == user?.id ){
+            for (likeDislike in idea.ideaIsLike) {
+                if (likeDislike.autor.id == user?.id) {
                     return throw ActionProhibitedException("действие запрешено")
                 }
             }
             val likeIsIdea = idea.ideaIsLike
             if (user != null) {
-                likeIsIdea.add(LikeAndDislike(AutorIdeaRequest(id = user.id, username = user.username, attachment = user.attachment), Calendar.getInstance().timeInMillis, TypeLikeDisLike.LIKE))
+                likeIsIdea.add(
+                    LikeAndDislike(
+                        AutorIdeaRequest(
+                            id = user.id,
+                            username = user.username,
+                            attachment = user.attachment
+                        ), Calendar.getInstance().timeInMillis, TypeLikeDisLike.LIKE
+                    )
+                )
             }
             val newIdea = idea.copy(like = idea.like.inc(), ideaIsLike = likeIsIdea, isLike = true)
             iteams[index] = newIdea
@@ -79,14 +85,22 @@ class IdeaRepositoryMutex : IdeaRepository {
                 return@withLock null
             }
             val idea = iteams[index]
-            for(likeDislike in idea.ideaIsLike){
-                if(likeDislike.autor.id == user?.id){
+            for (likeDislike in idea.ideaIsLike) {
+                if (likeDislike.autor.id == user?.id) {
                     return throw ActionProhibitedException("действие запрешено")
                 }
             }
             val likeIsIdea = idea.ideaIsLike
             if (user != null) {
-                likeIsIdea.add(LikeAndDislike(AutorIdeaRequest(id = user.id, username = user.username, attachment = user.attachment), Calendar.getInstance().timeInMillis, TypeLikeDisLike.DISLIKE))
+                likeIsIdea.add(
+                    LikeAndDislike(
+                        AutorIdeaRequest(
+                            id = user.id,
+                            username = user.username,
+                            attachment = user.attachment
+                        ), Calendar.getInstance().timeInMillis, TypeLikeDisLike.DISLIKE
+                    )
+                )
             }
             val newIdea = idea.copy(disLike = idea.disLike.inc(), ideaIsLike = likeIsIdea, isDisLike = true)
             iteams[index] = newIdea
@@ -98,7 +112,6 @@ class IdeaRepositoryMutex : IdeaRepository {
         mutex.withLock {
             iteams.find { it.id == id }
         }
-
 
 
 }

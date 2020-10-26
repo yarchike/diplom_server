@@ -1,4 +1,3 @@
 package com.martynov.dto
 
-data class TokenDeviceDto(val token: String) {
-}
+data class TokenDeviceDto(val token: String)

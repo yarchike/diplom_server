@@ -9,5 +9,5 @@ interface IdeaRepository {
     suspend fun getAll(id: Long?): List<IdeaModel>
     suspend fun like(id: Long, user: UserModel?): IdeaModel?
     suspend fun disLike(id: Long, user: UserModel?): IdeaModel?
-    suspend fun getIdeaId(id:Long?):IdeaModel?
+    suspend fun getIdeaId(id: Long?): IdeaModel?
 }

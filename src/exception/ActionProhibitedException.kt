@@ -1,3 +1,3 @@
 package com.martynov.exception
 
-class ActionProhibitedException (message: String): RuntimeException(message)
+class ActionProhibitedException(message: String) : RuntimeException(message)

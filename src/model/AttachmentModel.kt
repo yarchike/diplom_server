@@ -5,4 +5,4 @@ enum class AttachmentType {
     IMAGE
 }
 
-data class AttachmentModel (val id: String, val mediaType: AttachmentType = AttachmentType.IMAGE)
+data class AttachmentModel(val id: String, val mediaType: AttachmentType = AttachmentType.IMAGE)

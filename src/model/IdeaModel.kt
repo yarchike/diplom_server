@@ -11,8 +11,7 @@ data class IdeaModel(
     val like: Long = 0,
     val disLike: Long = 0,
     val ideaIsLike: ArrayList<LikeAndDislike> = ArrayList(),
-    //val ideaIsDisLike: ArrayList<Long> = ArrayList(),
-    var isLike:Boolean = false,
-    var isDisLike:Boolean = false,
-    val url:String =""
+    var isLike: Boolean = false,
+    var isDisLike: Boolean = false,
+    val url: String = ""
 )

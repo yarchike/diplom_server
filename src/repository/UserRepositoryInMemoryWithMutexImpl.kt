@@ -101,7 +101,7 @@ class UserRepositoryInMemoryWithMutexImpl : UserRepository {
         }
     }
 
-    override suspend fun userChangeImg(id: Long, attachmentModel: AttachmentModel):Boolean {
+    override suspend fun userChangeImg(id: Long, attachmentModel: AttachmentModel): Boolean {
         mutex.withLock {
             val index = iteams.indexOfFirst { it.id == id }
             val user = iteams[index]
@@ -140,6 +140,7 @@ class UserRepositoryInMemoryWithMutexImpl : UserRepository {
 
         }
     }
+
     override suspend fun disLikeUp(user: UserModel) {
         mutex.withLock {
             val index = iteams.indexOfFirst { it.id == user.id }
@@ -150,41 +151,48 @@ class UserRepositoryInMemoryWithMutexImpl : UserRepository {
         }
     }
 
-    override suspend fun toHater(user: UserModel){
+    override suspend fun toHater(user: UserModel) {
         val sortIteam = ArrayList<UserModel>(iteams)
         sortIteam.sortWith(
             compareBy { it.numberOfDislike }
         )
         val isIndex = sortIteam.takeLast(5).indexOfFirst { it.id == user.id }
         var isTopFive = false
-        if(isIndex > -1){
+        if (isIndex > -1) {
             isTopFive = true
         }
-        println("Диз ${user.numberOfDislike} ")
-        println(user.numberOfDislike > 2)
-        println(user.numberOfDislike > user.numberOfLike/2)
-        println(isTopFive)
-        if(user.numberOfDislike > 2 && user.numberOfDislike > user.numberOfLike/2  && isTopFive ){
-            println("Зашло")
+
+        if (user.numberOfDislike > 100 && user.numberOfDislike > user.numberOfLike / 2 && isTopFive) {
             val index = iteams.indexOfFirst { it.id == user.id }
             val copyUser = iteams[index].copy(userType = UserType.HATER)
             iteams[index] = copyUser
             File(FILE_USER).writeText(Gson().toJson(iteams))
+        } else {
+            val index = iteams.indexOfFirst { it.id == user.id }
+            val copyUser = iteams[index].copy(userType = UserType.NORMAL)
+            iteams[index] = copyUser
+            File(FILE_USER).writeText(Gson().toJson(iteams))
         }
     }
-    override suspend fun toPromoter(user: UserModel){
+
+    override suspend fun toPromoter(user: UserModel) {
         val sortIteam = ArrayList<UserModel>(iteams)
         sortIteam.sortWith(
             compareBy { it.numberOfLike }
         )
         val isIndex = sortIteam.takeLast(5).indexOfFirst { it.id == user.id }
         var isTopFive = false
-        if(isIndex > -1){
+        if (isIndex > -1) {
             isTopFive = true
         }
-        if(user.numberOfLike > 2 && user.numberOfLike > user.numberOfDislike/2  && isTopFive ){
+        if (user.numberOfLike > 100 && user.numberOfLike > user.numberOfDislike / 2 && isTopFive) {
             val index = iteams.indexOfFirst { it.id == user.id }
-            val copyUser = iteams[index].copy(userType = UserType.HATER)
+            val copyUser = iteams[index].copy(userType = UserType.PROMOTER)
+            iteams[index] = copyUser
+            File(FILE_USER).writeText(Gson().toJson(iteams))
+        } else {
+            val index = iteams.indexOfFirst { it.id == user.id }
+            val copyUser = iteams[index].copy(userType = UserType.NORMAL)
             iteams[index] = copyUser
             File(FILE_USER).writeText(Gson().toJson(iteams))
         }

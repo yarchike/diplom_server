@@ -12,8 +12,7 @@ object IdeaData {
             val type = object : TypeToken<List<IdeaModel>>() {}.type
             val result: ArrayList<IdeaModel> = Gson().fromJson(File(FILE_IDEA).readText(), type)
             return result
-        }
-        catch (e:Exception){
+        } catch (e: Exception) {
             return ArrayList<IdeaModel>()
         }
 

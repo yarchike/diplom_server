@@ -3,20 +3,16 @@ package com.martynov.service
 
 import com.martynov.dto.MediaResponseDto
 import com.martynov.model.MediaType
-import io.ktor.features.BadRequestException
-import io.ktor.features.UnsupportedMediaTypeException
-import io.ktor.http.ContentType
-import io.ktor.http.content.MultiPartData
-import io.ktor.http.content.PartData
-import io.ktor.http.content.forEachPart
-import io.ktor.http.content.streamProvider
+import io.ktor.features.*
+import io.ktor.http.*
+import io.ktor.http.content.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
 
-class FileService(private val uploadPath: String, private val uploadPathUser: String ) {
+class FileService(private val uploadPath: String, private val uploadPathUser: String) {
     private val images = listOf(ContentType.Image.JPEG, ContentType.Image.PNG)
 
     init {
@@ -62,6 +58,7 @@ class FileService(private val uploadPath: String, private val uploadPathUser: St
         }
         return response ?: throw BadRequestException("No file field in request")
     }
+
     suspend fun saveUser(multipart: MultiPartData): MediaResponseDto {
         var response: MediaResponseDto? = null
         multipart.forEachPart { part ->

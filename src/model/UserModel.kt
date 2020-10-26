@@ -8,9 +8,9 @@ data class UserModel(
     val password: String,
     val token: String,
     val tokenDevice: String = "",
-    val attachment: AttachmentModel?= null,
+    val attachment: AttachmentModel? = null,
     val readOnlyIdea: Boolean = false,
     val userType: UserType = UserType.NORMAL,
-    val numberOfLike: Long =0,
-    val numberOfDislike: Long =0
-): Principal
+    val numberOfLike: Long = 0,
+    val numberOfDislike: Long = 0
+) : Principal

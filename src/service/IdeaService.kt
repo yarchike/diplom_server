@@ -1,6 +1,5 @@
 package com.martynov.service
 
-import com.martynov.FILE_LOG
 import com.martynov.dto.AutorIdeaRequest
 import com.martynov.dto.IdeaResponseDto
 import com.martynov.model.IdeaModel
@@ -8,7 +7,6 @@ import com.martynov.model.UserModel
 import com.martynov.repository.IdeaRepository
 import com.martynov.repository.UserRepository
 import io.ktor.features.*
-import java.io.File
 
 class IdeaService(
     val repoUser: UserRepository,

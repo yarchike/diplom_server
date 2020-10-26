@@ -81,7 +81,7 @@ class RoutingV1(
                         val response = ideaService.getAllIdea(me?.id)
                         call.respond(response)
                     }
-                    get("/ideas/{id}"){
+                    get("/ideas/{id}") {
                         val id = call.parameters["id"]?.toLongOrNull()
                         val model = ideaService.getIdeaId(id) ?: throw NotFoundException()
                         call.respond(model)
@@ -97,11 +97,15 @@ class RoutingV1(
                         val id =
                             call.parameters["id"]?.toLongOrNull()
                                 ?: throw ParameterConversionException("id", "Long")
-                        println(id)
                         val me = call.authentication.principal<UserModel>()
                         val response = ideaService.like(id, me) ?: throw NotFoundException()
                         if (me != null) {
-                            fcmService.send(id, userService.findTokenDeviceUser(response.autor.id), "Одобрение", "Вашу идею одобрил ${me.username} ")
+                            fcmService.send(
+                                id,
+                                userService.findTokenDeviceUser(response.autor.id),
+                                "Одобрение",
+                                "Вашу идею одобрил ${me.username} "
+                            )
                         }
                         call.respond(response)
 
@@ -110,11 +114,15 @@ class RoutingV1(
                         val id =
                             call.parameters["id"]?.toLongOrNull()
                                 ?: throw ParameterConversionException("id", "Long")
-                        println(id)
                         val me = call.authentication.principal<UserModel>()
                         val response = ideaService.dislike(id, me) ?: throw NotFoundException()
                         if (me != null) {
-                            fcmService.send(id, userService.findTokenDeviceUser(response.autor.id), "Неодобрение", "Вашу идею неодобрил ${me.username}" )
+                            fcmService.send(
+                                id,
+                                userService.findTokenDeviceUser(response.autor.id),
+                                "Неодобрение",
+                                "Вашу идею неодобрил ${me.username}"
+                            )
                         }
                         call.respond(response)
 
@@ -144,11 +152,8 @@ class RoutingV1(
                     }
                     post("/push") {
                         val input = call.receive<TokenDeviceDto>()
-                        println(input.token)
                         val input2 = call.request.header("Id")?.toLong()
-                        println(input2)
                         val user = userService.addTokenDevice(input2, input.token)
-                        println(user)
                         call.respond(user)
 
                     }
