@@ -1,5 +1,8 @@
 package com.martynov.service
 
+import com.google.gson.Gson
+import com.martynov.FILE_LOG
+import com.martynov.FILE_USER
 import com.martynov.dto.AutorIdeaRequest
 import com.martynov.dto.IdeaResponseDto
 import com.martynov.model.IdeaModel
@@ -7,6 +10,7 @@ import com.martynov.model.UserModel
 import com.martynov.repository.IdeaRepository
 import com.martynov.repository.UserRepository
 import io.ktor.features.*
+import java.io.File
 
 class IdeaService(
     val repoUser: UserRepository,
@@ -75,7 +79,8 @@ class IdeaService(
         val userList = repoUser.getAllUser()
         if (idEndIdea == -1L) {
             val newIdeaList = ArrayList<IdeaModel>()
-            for (idea in listIdea.takeLast(20)) {
+
+            for (idea in listIdea.take(20)) {
                 val index = userList.indexOfFirst { idea.autor.id == it.id }
                 if (index > -1) {
                     newIdeaList.add(idea.copy(autor = AutorIdeaRequest.fromModel(userList[index])))
